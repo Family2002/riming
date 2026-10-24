@@ -61,6 +61,8 @@ app.*.map.json
 *.pem
 .env
 .env.*
+!.env.example
+supabase.env.json
 credentials.json
 google-services.json
 GoogleService-Info.plist

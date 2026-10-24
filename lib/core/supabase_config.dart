@@ -1,12 +1,5 @@
-/// Supabase URL + anon/publishable key from `--dart-define` (or
-/// `--dart-define-from-file`).
-///
-/// Example:
-/// ```bash
-/// flutter run --dart-define=SUPABASE_URL=https://xxx.supabase.co \
-///   --dart-define=SUPABASE_ANON_KEY=eyJ...
-/// ```
-/// Or: `flutter run --dart-define-from-file=supabase.env.json`
+/// Cloud sync backend URL + publishable/anon key from `--dart-define`
+/// (or `--dart-define-from-file`). See `.env.example` / `supabase.env.json.example`.
 class SupabaseConfig {
   const SupabaseConfig._();
 

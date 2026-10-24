@@ -10,7 +10,7 @@
 - 往日记录浏览与事项编辑
 - 多套安静日记感主题配色（浅色 / 深色 / 跟随系统）
 - Android 前台服务常驻通知，后台计时不断档
-- 可选 **Supabase 云同步**（邮箱+密码登录，多设备 last-write-wins）
+- 可选**云同步 / 账号备份**（邮箱登录后多设备同步）
 
 ## 下载
 
@@ -45,11 +45,11 @@ Windows 请保证 `flutter`、`adb` 在 PATH，并设置 `ANDROID_HOME`。
 3. 做完后点「切换事项」，输入下一件事；上一段会自动记上结束时间
 4. 需要只结束、不开始下一项时，点「结束当前」
 5. 点时间线上的事项可编辑名称与起止时间
-6. 右上角可切换主题；日历可查看往日时间线
+6. 右上角可切换主题、账号同步；日历可查看往日时间线
 
 ## 技术栈
 
-Flutter · Material 3 · Riverpod · Drift (SQLite) · Supabase · go_router · Google Fonts · flutter_foreground_task · [liquid_glass_widgets](https://github.com/sdegenaar/liquid_glass_widgets)
+Flutter · Material 3 · Riverpod · Drift (SQLite) · go_router · Google Fonts · flutter_foreground_task · [liquid_glass_widgets](https://github.com/sdegenaar/liquid_glass_widgets)
 
 ## 致谢 / Credits
 
@@ -66,57 +66,7 @@ Flutter · Material 3 · Riverpod · Drift (SQLite) · Supabase · go_router · 
 ## 本地数据
 
 - 数据库：应用文档目录下的 `riming.sqlite`（Drift / SQLite）
-- 字段含 `id`（UUID）、`updatedAt`、`deletedAt`，用于云同步冲突解决
-
-## 云同步（Supabase）
-
-Auth 选用 **邮箱 + 密码**（Android 上最稳妥，无需配置 magic link 深链）。登录后、从后台回到前台、以及本地写入后会 **先拉后推**；冲突以 `updated_at` 较新为准；每位用户最多一条进行中事项（`end_at` 为空）。**切换登录账号**时会清空本机时间线再拉取，避免串号。
-
-### 本仓库关联项目
-
-| | |
-|--|--|
-| 名称 / ref | `riming` / `nigkntwnuvgwougpsoux` |
-| 区域 | **Tokyo（ap-northeast-1）** |
-| API URL | https://nigkntwnuvgwougpsoux.supabase.co |
-| Dashboard | https://supabase.com/dashboard/project/nigkntwnuvgwougpsoux |
-
-表结构与 RLS 见迁移：[`supabase/migrations/20261024120000_activities_rls.sql`](supabase/migrations/20261024120000_activities_rls.sql)（已在上述项目应用）。
-
-**自测建议：** 在 Dashboard → [Authentication → Providers → Email](https://supabase.com/dashboard/project/nigkntwnuvgwougpsoux/auth/providers) **关闭 Confirm email**，注册后可立即登录。
-
-### 本地配置（勿提交密钥）
-
-1. 复制 `supabase.env.json.example` → `supabase.env.json`（已 gitignore）
-2. 填入 Dashboard → Project Settings → API 的 **anon** / publishable key（勿用 `service_role`）
-3. 运行：
-
-```bash
-flutter run -d <deviceId> --dart-define-from-file=supabase.env.json
-```
-
-其他方式：
-
-```bash
-# 方式 A：dart-define
-flutter run -d <deviceId> \
-  --dart-define=SUPABASE_URL=https://nigkntwnuvgwougpsoux.supabase.co \
-  --dart-define=SUPABASE_ANON_KEY=YOUR_ANON_KEY
-
-# 方式 C：.env + 脚本（复制 .env.example → .env）
-.\tools\run_with_env.ps1 -Device <deviceId>
-```
-
-环境变量：
-
-| 变量 | 含义 |
-|------|------|
-| `SUPABASE_URL` | 项目 API URL（见上表） |
-| `SUPABASE_ANON_KEY` | anon / publishable key（客户端可用；勿用 service_role） |
-
-未配置时 App 仍可离线使用；账号页会提示缺少配置。
-
-App 内入口：首页右上角「账号与同步」。
+- 字段含 `id`（UUID）、`updatedAt`、`deletedAt`，便于冲突解决与备份
 
 ## 后台计时（Android）
 
@@ -128,10 +78,9 @@ App 内入口：首页右上角「账号与同步」。
 
 ## English
 
-**Riming（日铭）** is a calm daily activity time-log app for Android/Flutter: one primary button to start/switch activities, a local SQLite timeline, themed liquid-glass UI.
+**Riming（日铭）** is a calm daily activity time-log app for Android/Flutter: one primary button to start/switch activities, a local SQLite timeline, themed liquid-glass UI, with optional cloud backup via account login.
 
 - Build: `flutter pub get && flutter build apk --release`
-- Cloud sync: Supabase project `riming` in Tokyo — run with `--dart-define-from-file=supabase.env.json` (see Chinese section above)
 - APK: [Releases v1.0.1](https://github.com/Family2002/riming/releases/tag/v1.0.1)
 - License: [PolyForm Noncommercial 1.0.0](LICENSE) — non-commercial use only
 - Credits: developed with **Cursor** and **Grok**; glass UI via [liquid_glass_widgets](https://github.com/sdegenaar/liquid_glass_widgets)

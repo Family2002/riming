@@ -2,6 +2,13 @@
 
 本目录是 **日铭 monorepo** 中的网页分析端：手机 App 负责记录；本站提供热力图、当日明细、区间统计与 CSV 导出。登录账号与日铭 App 相同（邮箱 + 密码）。
 
+**访问地址**
+
+| 用途 | 地址 |
+|------|------|
+| **正式 / 预期域名** | [https://riming.shilongs.top](https://riming.shilongs.top) |
+| 过渡（Cloudflare Workers） | [https://riming-web.wylking.workers.dev](https://riming-web.wylking.workers.dev) |
+
 许可证与致谢见仓库根目录 [`LICENSE`](../LICENSE) / [`NOTICE`](../NOTICE) / [`README.md`](../README.md)（PolyForm Noncommercial）。
 
 ## 本地运行
@@ -52,7 +59,7 @@ CSV 列：`id,title,start_at,end_at,duration_sec,date_local`
 npm run deploy:vinext
 ```
 
-生产环境请在 Supabase Auth 中把站点 URL / Redirect URLs 配成你的域名。不要把密钥写进 README 或提交进 git。
+生产环境请在 Auth 中把站点 URL / Redirect URLs 配成 `https://riming.shilongs.top`（过渡期可同时保留 workers.dev）。不要把密钥写进 README 或提交进 git。
 
 ## 技术栈
 

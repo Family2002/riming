@@ -1,6 +1,9 @@
 # 日铭（Riming）
 
-简洁的**每日活动时间线**记录 App：点一下大按钮 → 输入事项 → 再点一下结束并切换下一项。数据保存在本机 SQLite，界面为 Material 3 + 液态玻璃风格。本仓库同时包含可选的网页分析端（`riming-web/`）。
+**手机 App 负责记录，网页负责分析。**
+
+- **手机（Flutter）**：点一下大按钮 → 输入事项 → 再点一下结束并切换下一项；数据保存在本机 SQLite，可选云同步。界面为 Material 3 + 液态玻璃风格。
+- **网页（`riming-web/`）**：同一账号登录后查看热力图、当日明细、区间统计与 CSV 导出。
 
 [English summary](#english) · [下载 APK](https://github.com/Family2002/riming/releases/tag/v1.0.2)
 
@@ -11,24 +14,33 @@
 - 多套安静日记感主题配色（浅色 / 深色 / 跟随系统）
 - Android 前台服务常驻通知，后台计时不断档
 - 可选**云同步 / 账号备份**（邮箱登录后多设备同步）
-- 可选**网页分析**（热力图、区间统计、CSV 导出；与 App 同一账号）
+- **网页分析**：热力图、区间统计、CSV 导出（与 App 同一账号）
 
 ## 下载
 
 正式预览包见 GitHub **[Releases v1.0.2](https://github.com/Family2002/riming/releases/tag/v1.0.2)**。
 
-> 首发 APK 使用 Flutter 默认 **debug/preview 签名**（未配置独立 release keystore），仅供非商业试用；上架商店前请自行配置正式签名。
+> APK 使用 Flutter 默认 **debug/preview 签名**（未配置独立 release keystore），仅供非商业试用；上架商店前请自行配置正式签名。
+
+## 网页访问
+
+| 用途 | 地址 |
+|------|------|
+| **正式 / 预期域名** | [https://riming.shilongs.top](https://riming.shilongs.top) |
+| 过渡（Cloudflare Workers） | [https://riming-web.wylking.workers.dev](https://riming-web.wylking.workers.dev) |
+
+登录账号与手机 App 相同（邮箱 + 密码）。生产环境请在你的后端 Auth 中把站点 URL / Redirect URLs 配成上述域名。
 
 ## 仓库结构
 
 | 路径 | 说明 |
 |------|------|
-| `lib/`、`android/` … | Flutter 手机 App |
-| [`riming-web/`](riming-web/) | 网页分析（Next.js / vinext，可部署 Cloudflare Workers） |
+| `lib/`、`android/` … | Flutter 手机 App（采集 / 时间线） |
+| [`riming-web/`](riming-web/) | 网页分析（Next.js / vinext → Cloudflare Workers） |
 
 ## 运行与构建
 
-### Flutter App
+### Flutter 手机 App
 
 ```bash
 flutter pub get
@@ -39,6 +51,8 @@ flutter run -d <deviceId>
 flutter build apk --release
 # 产物：build/app/outputs/flutter-apk/app-release.apk
 ```
+
+可选云同步：复制 `.env.example` 为 `.env`，填入你自己的后端 **URL** 与 **anon/publishable key**，再用 `tools/run_with_env.ps1` 注入 `--dart-define`（切勿提交 `.env`）。
 
 首次改库表结构后需重新生成 Drift 代码：
 
@@ -55,13 +69,20 @@ Windows 请保证 `flutter`、`adb` 在 PATH，并设置 `ANDROID_HOME`。
 ```bash
 cd riming-web
 npm install
-cp .env.local.example .env.local   # 填入你自己的 Supabase Project URL 与 anon key
+cp .env.local.example .env.local   # 填入你自己的 Project URL 与 anon key
 npm run dev                        # http://localhost:3000
 ```
 
-可选 Cloudflare Workers 部署（vinext）：在 `riming-web/` 配置好环境变量后执行 `npm run deploy:vinext`。不要把 `.env.local` 或密钥提交进仓库。
+部署到 Cloudflare Workers（vinext）：
 
-## 使用流程
+```bash
+cd riming-web
+npm run deploy:vinext
+```
+
+预期自定义域名为 `riming.shilongs.top`（见 `riming-web/cloudflare.config.ts`）；过渡可用 `riming-web.wylking.workers.dev`。不要把 `.env.local` 或密钥提交进仓库。
+
+## 使用流程（手机）
 
 1. 打开 App，点中间的「开始记录」
 2. 输入当前事项（如「起床」）
@@ -69,10 +90,12 @@ npm run dev                        # http://localhost:3000
 4. 需要只结束、不开始下一项时，点「结束当前」
 5. 点时间线上的事项可编辑名称与起止时间
 6. 右上角可切换主题、账号同步；日历可查看往日时间线
+7. 需要深度统计时，用同一账号打开网页端
 
 ## 技术栈
 
-Flutter · Material 3 · Riverpod · Drift (SQLite) · go_router · Google Fonts · flutter_foreground_task · [liquid_glass_widgets](https://github.com/sdegenaar/liquid_glass_widgets)
+- **App**：Flutter · Material 3 · Riverpod · Drift (SQLite) · go_router · Google Fonts · flutter_foreground_task · [liquid_glass_widgets](https://github.com/sdegenaar/liquid_glass_widgets)
+- **Web**：Next.js（App Router）· vinext / Vite · TypeScript · Tailwind · ECharts · Cloudflare Workers（可选）
 
 ## 致谢 / Credits
 
@@ -84,7 +107,7 @@ Flutter · Material 3 · Riverpod · Drift (SQLite) · go_router · Google Fonts
 
 本项目采用 **[PolyForm Noncommercial License 1.0.0](LICENSE)**：允许出于非商业目的使用、修改与分享；**禁止商业用途**。完整条款见仓库根目录 `LICENSE`。
 
-第三方依赖（Flutter SDK、packages 等）仍遵循各自许可证，见 `pubspec.yaml` / pub.dev。
+第三方依赖（Flutter SDK、packages、npm 包等）仍遵循各自许可证，见 `pubspec.yaml` / `riming-web/package.json`。
 
 ## 本地数据
 
@@ -101,10 +124,14 @@ Flutter · Material 3 · Riverpod · Drift (SQLite) · go_router · Google Fonts
 
 ## English
 
-**Riming（日铭）** is a calm daily activity time-log app for Android/Flutter: one primary button to start/switch activities, a local SQLite timeline, themed liquid-glass UI, with optional cloud backup via account login. Optional web analytics live in [`riming-web/`](riming-web/).
+**Riming（日铭）**: phone app = capture; web = analytics.
 
-- Build: `flutter pub get && flutter build apk --release`
-- Web: `cd riming-web && npm install && npm run dev` (see that folder’s README; set your own Supabase URL/anon key locally)
+- **Phone (Flutter)**: one primary button to start/switch activities, local SQLite timeline, liquid-glass UI, optional cloud backup.
+- **Web ([`riming-web/`](riming-web/))**: heatmaps, range stats, CSV export — same account as the app.
+- **Web URLs**: intended [https://riming.shilongs.top](https://riming.shilongs.top); interim [https://riming-web.wylking.workers.dev](https://riming-web.wylking.workers.dev).
+- Build app: `flutter pub get && flutter build apk --release`
+- Run web: `cd riming-web && npm install && npm run dev` (copy `.env.local.example`; use your own backend URL/anon key — never commit secrets)
+- Deploy web: `cd riming-web && npm run deploy:vinext`
 - APK: [Releases v1.0.2](https://github.com/Family2002/riming/releases/tag/v1.0.2)
 - License: [PolyForm Noncommercial 1.0.0](LICENSE) — non-commercial use only
 - Credits: developed with **Cursor** and **Grok**; glass UI via [liquid_glass_widgets](https://github.com/sdegenaar/liquid_glass_widgets)

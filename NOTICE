@@ -1,0 +1,20 @@
+日铭（Riming）
+Copyright (c) the Riming contributors.
+
+Licensed under the PolyForm Noncommercial License 1.0.0.
+See the LICENSE file in the project root and:
+https://polyformproject.org/licenses/noncommercial/1.0.0
+
+Required Notice: This software is offered for noncommercial purposes only.
+
+---
+
+Third-party notices (non-exhaustive):
+
+- liquid_glass_widgets — https://github.com/sdegenaar/liquid_glass_widgets
+  (see that repository for its license terms)
+
+- Flutter and Dart packages listed in pubspec.yaml / pubspec.lock
+  (each under its own license on pub.dev)
+
+AI collaborators acknowledged in README: Cursor, Grok.

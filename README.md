@@ -2,7 +2,7 @@
 
 简洁的**每日活动时间线**记录 App：点一下大按钮 → 输入事项 → 再点一下结束并切换下一项。数据保存在本机 SQLite，界面为 Material 3 + 液态玻璃风格。
 
-[English summary](#english) · 下载见仓库 **Releases**
+[English summary](#english) · [下载 APK](https://github.com/Family2002/riming/releases/tag/v1.0.0)
 
 ## 功能概览
 
@@ -13,7 +13,7 @@
 
 ## 下载
 
-正式预览包见本仓库 GitHub **Releases**（`v1.0.0` APK）。
+正式预览包见 GitHub **[Releases v1.0.0](https://github.com/Family2002/riming/releases/tag/v1.0.0)**。
 
 > 首发 APK 使用 Flutter 默认 **debug/preview 签名**（未配置独立 release keystore），仅供非商业试用；上架商店前请自行配置正式签名。
 
@@ -80,6 +80,6 @@ Flutter · Material 3 · Riverpod · Drift (SQLite) · go_router · Google Fonts
 **Riming（日铭）** is a calm daily activity time-log app for Android/Flutter: one primary button to start/switch activities, a local SQLite timeline, themed liquid-glass UI.
 
 - Build: `flutter pub get && flutter build apk --release`
-- APK: see this repo’s GitHub **Releases**
+- APK: [Releases v1.0.0](https://github.com/Family2002/riming/releases/tag/v1.0.0)
 - License: [PolyForm Noncommercial 1.0.0](LICENSE) — non-commercial use only
 - Credits: developed with **Cursor** and **Grok**; glass UI via [liquid_glass_widgets](https://github.com/sdegenaar/liquid_glass_widgets)

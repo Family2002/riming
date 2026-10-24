@@ -38,6 +38,7 @@ skills-lock.json
 .pub-cache/
 .pub/
 /build/
+/dist/
 /coverage/
 
 # Symbolication related

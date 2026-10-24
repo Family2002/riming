@@ -1,7 +1,7 @@
 name: riming
 description: 日铭 — 简洁的每日活动时间线记录
 publish_to: "none"
-version: 1.0.1+2
+version: 1.0.2+3
 
 environment:
   sdk: ^3.13.7

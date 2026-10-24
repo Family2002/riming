@@ -62,6 +62,7 @@ app.*.map.json
 .env
 .env.*
 !.env.example
+!.env.local.example
 supabase.env.json
 credentials.json
 google-services.json
@@ -72,4 +73,15 @@ GoogleService-Info.plist
 
 # Supabase CLI local cache
 supabase/.temp/
+
+# Web app (riming-web/) — node/vinext build caches
+riming-web/node_modules/
+riming-web/.next/
+riming-web/out/
+riming-web/dist/
+riming-web/.vinext/
+riming-web/.cloudflare/
+riming-web/*.tsbuildinfo
+riming-web/next-env.d.ts
+
 

@@ -1,24 +1,34 @@
 # 日铭（Riming）
 
-简洁的**每日活动时间线**记录 App：点一下大按钮 → 输入事项 → 再点一下结束并切换下一项。数据保存在本机 SQLite，界面为 Material 3 + 液态玻璃风格。
+简洁的**每日活动时间线**记录 App：点一下大按钮 → 输入事项 → 再点一下结束并切换下一项。数据保存在本机 SQLite，界面为 Material 3 + 液态玻璃风格。本仓库同时包含可选的网页分析端（`riming-web/`）。
 
-[English summary](#english) · [下载 APK](https://github.com/Family2002/riming/releases/tag/v1.0.1)
+[English summary](#english) · [下载 APK](https://github.com/Family2002/riming/releases/tag/v1.0.2)
 
 ## 功能概览
 
 - 一键开始 / 切换 / 结束事项，时间线自动分段
-- 往日记录浏览与事项编辑
+- 往日记录浏览、事项编辑与轻量当日摘要
 - 多套安静日记感主题配色（浅色 / 深色 / 跟随系统）
 - Android 前台服务常驻通知，后台计时不断档
 - 可选**云同步 / 账号备份**（邮箱登录后多设备同步）
+- 可选**网页分析**（热力图、区间统计、CSV 导出；与 App 同一账号）
 
 ## 下载
 
-正式预览包见 GitHub **[Releases v1.0.1](https://github.com/Family2002/riming/releases/tag/v1.0.1)**。
+正式预览包见 GitHub **[Releases v1.0.2](https://github.com/Family2002/riming/releases/tag/v1.0.2)**。
 
 > 首发 APK 使用 Flutter 默认 **debug/preview 签名**（未配置独立 release keystore），仅供非商业试用；上架商店前请自行配置正式签名。
 
+## 仓库结构
+
+| 路径 | 说明 |
+|------|------|
+| `lib/`、`android/` … | Flutter 手机 App |
+| [`riming-web/`](riming-web/) | 网页分析（Next.js / vinext，可部署 Cloudflare Workers） |
+
 ## 运行与构建
+
+### Flutter App
 
 ```bash
 flutter pub get
@@ -37,6 +47,19 @@ dart run build_runner build
 ```
 
 Windows 请保证 `flutter`、`adb` 在 PATH，并设置 `ANDROID_HOME`。
+
+### 网页分析（`riming-web/`）
+
+详见 [`riming-web/README.md`](riming-web/README.md)。简要步骤：
+
+```bash
+cd riming-web
+npm install
+cp .env.local.example .env.local   # 填入你自己的 Supabase Project URL 与 anon key
+npm run dev                        # http://localhost:3000
+```
+
+可选 Cloudflare Workers 部署（vinext）：在 `riming-web/` 配置好环境变量后执行 `npm run deploy:vinext`。不要把 `.env.local` 或密钥提交进仓库。
 
 ## 使用流程
 
@@ -78,9 +101,10 @@ Flutter · Material 3 · Riverpod · Drift (SQLite) · go_router · Google Fonts
 
 ## English
 
-**Riming（日铭）** is a calm daily activity time-log app for Android/Flutter: one primary button to start/switch activities, a local SQLite timeline, themed liquid-glass UI, with optional cloud backup via account login.
+**Riming（日铭）** is a calm daily activity time-log app for Android/Flutter: one primary button to start/switch activities, a local SQLite timeline, themed liquid-glass UI, with optional cloud backup via account login. Optional web analytics live in [`riming-web/`](riming-web/).
 
 - Build: `flutter pub get && flutter build apk --release`
-- APK: [Releases v1.0.1](https://github.com/Family2002/riming/releases/tag/v1.0.1)
+- Web: `cd riming-web && npm install && npm run dev` (see that folder’s README; set your own Supabase URL/anon key locally)
+- APK: [Releases v1.0.2](https://github.com/Family2002/riming/releases/tag/v1.0.2)
 - License: [PolyForm Noncommercial 1.0.0](LICENSE) — non-commercial use only
 - Credits: developed with **Cursor** and **Grok**; glass UI via [liquid_glass_widgets](https://github.com/sdegenaar/liquid_glass_widgets)

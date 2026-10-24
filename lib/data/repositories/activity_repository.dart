@@ -80,6 +80,11 @@ class ActivityRepository {
   Stream<List<Activity>> watchForDay(DateTime day) {
     final start = DateTime(day.year, day.month, day.day);
     final end = start.add(const Duration(days: 1));
+    return watchForRange(start, end);
+  }
+
+  /// Inclusive [start], exclusive [end] on local [Activity.startAt].
+  Stream<List<Activity>> watchForRange(DateTime start, DateTime end) {
     final query = (_db.select(_db.activities)
           ..where(
             (t) =>
@@ -221,6 +226,23 @@ class ActivityRepository {
         .getSingle();
     _notifyWrite();
     return _map(row);
+  }
+
+  /// Non-deleted activities whose [startAt] falls in [[from], [toExclusive]).
+  Future<List<Activity>> listForRange(
+    DateTime from,
+    DateTime toExclusive,
+  ) async {
+    final rows = await (_db.select(_db.activities)
+          ..where(
+            (t) =>
+                t.deletedAt.isNull() &
+                t.startAt.isBiggerOrEqualValue(from) &
+                t.startAt.isSmallerThanValue(toExclusive),
+          )
+          ..orderBy([(t) => OrderingTerm.asc(t.startAt)]))
+        .get();
+    return rows.map(_map).toList();
   }
 
   /// Days that have at least one non-deleted activity (newest first).

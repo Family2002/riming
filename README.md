@@ -70,7 +70,7 @@ Flutter · Material 3 · Riverpod · Drift (SQLite) · Supabase · go_router · 
 
 ## 云同步（Supabase）
 
-Auth 选用 **邮箱 + 密码**（Android 上最稳妥，无需配置 magic link 深链）。登录后、App 回到前台、以及本地写入后会 **先拉后推**；冲突以 `updated_at` 较新为准；每位用户最多一条进行中事项（`end_at` 为空）。
+Auth 选用 **邮箱 + 密码**（Android 上最稳妥，无需配置 magic link 深链）。登录后、从后台回到前台、以及本地写入后会 **先拉后推**；冲突以 `updated_at` 较新为准；每位用户最多一条进行中事项（`end_at` 为空）。**切换登录账号**时会清空本机时间线再拉取，避免串号。
 
 ### 本仓库关联项目
 

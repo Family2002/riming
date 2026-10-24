@@ -5,10 +5,15 @@ import '../../domain/models/activity.dart';
 import '../database/app_database.dart';
 
 class ActivityRepository {
-  ActivityRepository(this._db);
+  ActivityRepository(this._db, {this.onLocalWrite});
 
   final AppDatabase _db;
   final _uuid = const Uuid();
+
+  /// Fired after local mutations so cloud sync can debounce a push.
+  void Function()? onLocalWrite;
+
+  void _notifyWrite() => onLocalWrite?.call();
 
   Activity _map(ActivityRow row) {
     return Activity(
@@ -19,6 +24,57 @@ class ActivityRepository {
       updatedAt: row.updatedAt,
       deletedAt: row.deletedAt,
     );
+  }
+
+  /// All rows including soft-deleted (for sync).
+  Future<List<Activity>> getAllIncludingDeleted() async {
+    final rows = await _db.select(_db.activities).get();
+    return rows.map(_map).toList();
+  }
+
+  /// Insert or replace from remote / merge without changing [updatedAt].
+  Future<void> upsertFromSync(Activity activity) async {
+    await _db.into(_db.activities).insertOnConflictUpdate(
+          ActivitiesCompanion(
+            id: Value(activity.id),
+            title: Value(activity.title),
+            startAt: Value(activity.startAt),
+            endAt: Value(activity.endAt),
+            updatedAt: Value(activity.updatedAt),
+            deletedAt: Value(activity.deletedAt),
+          ),
+        );
+  }
+
+  /// Ends extras so at most one non-deleted ongoing activity remains.
+  /// Keeps the one with the latest [startAt] (then [updatedAt]).
+  /// Does not bump the keeper's [updatedAt] (avoids needless LWW fights).
+  Future<void> enforceSingleOngoing() async {
+    final ongoing = await (_db.select(_db.activities)
+          ..where((t) => t.deletedAt.isNull() & t.endAt.isNull()))
+        .get();
+    if (ongoing.length <= 1) return;
+
+    ongoing.sort((a, b) {
+      final byStart = b.startAt.compareTo(a.startAt);
+      if (byStart != 0) return byStart;
+      return b.updatedAt.compareTo(a.updatedAt);
+    });
+    final now = DateTime.now();
+    for (final row in ongoing.skip(1)) {
+      await (_db.update(_db.activities)..where((t) => t.id.equals(row.id)))
+          .write(
+        ActivitiesCompanion(
+          endAt: Value(now),
+          updatedAt: Value(now),
+        ),
+      );
+    }
+  }
+
+  /// Hard-clears local activities (account switch — prevent cross-user merge).
+  Future<void> clearAllLocal() async {
+    await _db.delete(_db.activities).go();
   }
 
   Stream<List<Activity>> watchForDay(DateTime day) {
@@ -60,7 +116,7 @@ class ActivityRepository {
     }
 
     final now = DateTime.now();
-    return _db.transaction(() async {
+    final created = await _db.transaction(() async {
       final ongoing = await (_db.select(_db.activities)
             ..where((t) => t.deletedAt.isNull() & t.endAt.isNull()))
           .get();
@@ -91,6 +147,8 @@ class ActivityRepository {
         updatedAt: now,
       );
     });
+    _notifyWrite();
+    return created;
   }
 
   /// Ends the current activity without starting a new one.
@@ -104,6 +162,7 @@ class ActivityRepository {
         updatedAt: Value(now),
       ),
     );
+    _notifyWrite();
   }
 
   /// Updates title and/or times. Clears [endAt] when [clearEndAt] is true
@@ -124,18 +183,43 @@ class ActivityRepository {
     }
 
     final now = DateTime.now();
-    await (_db.update(_db.activities)..where((t) => t.id.equals(id))).write(
-      ActivitiesCompanion(
-        title: Value(trimmed),
-        startAt: Value(startAt),
-        endAt: clearEndAt ? const Value(null) : Value(endAt),
-        updatedAt: Value(now),
-      ),
-    );
+    // clearEndAt or explicitly null endAt → row becomes the sole ongoing.
+    final becomingOngoing = clearEndAt || endAt == null;
+    await _db.transaction(() async {
+      if (becomingOngoing) {
+        final others = await (_db.select(_db.activities)
+              ..where(
+                (t) =>
+                    t.deletedAt.isNull() &
+                    t.endAt.isNull() &
+                    t.id.isNotValue(id),
+              ))
+            .get();
+        for (final row in others) {
+          await (_db.update(_db.activities)..where((t) => t.id.equals(row.id)))
+              .write(
+            ActivitiesCompanion(
+              endAt: Value(now),
+              updatedAt: Value(now),
+            ),
+          );
+        }
+      }
+
+      await (_db.update(_db.activities)..where((t) => t.id.equals(id))).write(
+        ActivitiesCompanion(
+          title: Value(trimmed),
+          startAt: Value(startAt),
+          endAt: clearEndAt ? const Value(null) : Value(endAt),
+          updatedAt: Value(now),
+        ),
+      );
+    });
 
     final row = await (_db.select(_db.activities)
           ..where((t) => t.id.equals(id)))
         .getSingle();
+    _notifyWrite();
     return _map(row);
   }
 

@@ -125,6 +125,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         centerTitle: false,
         actions: [
           IconButton(
+            tooltip: '账号与同步',
+            onPressed: () => context.push('/account'),
+            icon: Icon(CupertinoIcons.person_crop_circle,
+                color: scheme.onSurface),
+          ),
+          IconButton(
             tooltip: '主题',
             onPressed: () => context.push('/themes'),
             icon: Icon(CupertinoIcons.paintbrush, color: scheme.onSurface),

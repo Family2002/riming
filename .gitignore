@@ -69,3 +69,7 @@ GoogleService-Info.plist
 
 # Widget Preview related
 .widget_preview/
+
+# Supabase CLI local cache
+supabase/.temp/
+

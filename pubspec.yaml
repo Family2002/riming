@@ -24,6 +24,7 @@ dependencies:
   shared_preferences: ^2.5.6
   flutter_foreground_task: ^11.0.3
   liquid_glass_widgets: ^1.14.2
+  supabase_flutter: ^2.18.3
 dev_dependencies:
   flutter_test:
     sdk: flutter

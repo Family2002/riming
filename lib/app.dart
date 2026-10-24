@@ -4,9 +4,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:liquid_glass_widgets/liquid_glass_widgets.dart';
 
+import 'providers/sync_providers.dart';
 import 'ui/core/theme/app_themes.dart';
 import 'ui/core/theme/riming_glass_theme.dart';
 import 'ui/core/theme/theme_preferences.dart';
+import 'ui/features/account/views/account_screen.dart';
 import 'ui/features/history/views/history_screen.dart';
 import 'ui/features/home/views/home_screen.dart';
 import 'ui/features/settings/views/theme_settings_screen.dart';
@@ -24,6 +26,10 @@ final _router = GoRouter(
         GoRoute(
           path: 'themes',
           builder: (context, state) => const ThemeSettingsScreen(),
+        ),
+        GoRoute(
+          path: 'account',
+          builder: (context, state) => const AccountScreen(),
         ),
       ],
     ),
@@ -64,9 +70,11 @@ class RimingApp extends ConsumerWidget {
         routerConfig: _router,
         builder: (context, child) {
           final scheme = Theme.of(context).colorScheme;
-          return GlassTheme(
-            data: rimingGlassTheme(scheme),
-            child: child ?? const SizedBox.shrink(),
+          return SyncLifecycleBinding(
+            child: GlassTheme(
+              data: rimingGlassTheme(scheme),
+              child: child ?? const SizedBox.shrink(),
+            ),
           );
         },
       ),

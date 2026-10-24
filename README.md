@@ -2,7 +2,7 @@
 
 简洁的**每日活动时间线**记录 App：点一下大按钮 → 输入事项 → 再点一下结束并切换下一项。数据保存在本机 SQLite，界面为 Material 3 + 液态玻璃风格。
 
-[English summary](#english) · [下载 APK](https://github.com/Family2002/riming/releases/tag/v1.0.0)
+[English summary](#english) · [下载 APK](https://github.com/Family2002/riming/releases/tag/v1.0.1)
 
 ## 功能概览
 
@@ -14,7 +14,7 @@
 
 ## 下载
 
-正式预览包见 GitHub **[Releases v1.0.0](https://github.com/Family2002/riming/releases/tag/v1.0.0)**。
+正式预览包见 GitHub **[Releases v1.0.1](https://github.com/Family2002/riming/releases/tag/v1.0.1)**。
 
 > 首发 APK 使用 Flutter 默认 **debug/preview 签名**（未配置独立 release keystore），仅供非商业试用；上架商店前请自行配置正式签名。
 
@@ -132,6 +132,6 @@ App 内入口：首页右上角「账号与同步」。
 
 - Build: `flutter pub get && flutter build apk --release`
 - Cloud sync: Supabase project `riming` in Tokyo — run with `--dart-define-from-file=supabase.env.json` (see Chinese section above)
-- APK: [Releases v1.0.0](https://github.com/Family2002/riming/releases/tag/v1.0.0)
+- APK: [Releases v1.0.1](https://github.com/Family2002/riming/releases/tag/v1.0.1)
 - License: [PolyForm Noncommercial 1.0.0](LICENSE) — non-commercial use only
 - Credits: developed with **Cursor** and **Grok**; glass UI via [liquid_glass_widgets](https://github.com/sdegenaar/liquid_glass_widgets)

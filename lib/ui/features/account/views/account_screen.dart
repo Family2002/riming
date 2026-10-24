@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:liquid_glass_widgets/liquid_glass_widgets.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../../core/supabase_config.dart';
 import '../../../../providers/auth_controller.dart';
@@ -31,38 +32,110 @@ class _AccountScreenState extends ConsumerState<AccountScreen> {
     super.dispose();
   }
 
+  void _showMessage(String message, {bool error = false}) {
+    if (!mounted) return;
+    final scheme = Theme.of(context).colorScheme;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: error ? scheme.error : null,
+        behavior: SnackBarBehavior.floating,
+        duration: const Duration(seconds: 5),
+      ),
+    );
+  }
+
   Future<void> _submit(bool register) async {
     if (!(_formKey.currentState?.validate() ?? false)) return;
     final auth = ref.read(authControllerProvider.notifier);
+    final messenger = ScaffoldMessenger.of(context);
+
     if (register) {
-      await auth.signUp(email: _email.text, password: _password.text);
-    } else {
-      await auth.signIn(email: _email.text, password: _password.text);
+      final outcome = await auth.signUp(
+        email: _email.text,
+        password: _password.text,
+      );
+      if (!mounted) return;
+      final err = ref.read(authControllerProvider).asError;
+      if (err != null) {
+        _showMessage(_friendlyAuthError(err.error), error: true);
+        return;
+      }
+      if (outcome == null) {
+        _showMessage('注册失败，请稍后重试', error: true);
+        return;
+      }
+      // Always give visible feedback after register.
+      if (outcome.needsEmailConfirmation) {
+        await showDialog<void>(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: const Text('请确认邮箱'),
+            content: const Text(
+              '注册成功。请到邮箱查收确认邮件，点击链接完成验证后再登录。',
+            ),
+            actions: [
+              FilledButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('知道了'),
+              ),
+            ],
+          ),
+        );
+      } else {
+        messenger.showSnackBar(
+          const SnackBar(
+            content: Text('注册成功'),
+            behavior: SnackBarBehavior.floating,
+            duration: Duration(seconds: 3),
+          ),
+        );
+      }
+      return;
     }
+
+    await auth.signIn(email: _email.text, password: _password.text);
     if (!mounted) return;
     final err = ref.read(authControllerProvider).asError;
     if (err != null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(_friendlyAuthError(err.error))),
-      );
-    } else if (register) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('注册已提交。若开启了邮箱确认，请先查收邮件后再登录。'),
-        ),
-      );
+      _showMessage(_friendlyAuthError(err.error), error: true);
     }
   }
 
   String _friendlyAuthError(Object error) {
-    final text = error.toString();
-    if (text.contains('Invalid login credentials')) {
+    if (error is AuthException) {
+      final code = error.code?.toLowerCase() ?? '';
+      final message = error.message.toLowerCase();
+      if (code == 'email_not_confirmed' ||
+          message.contains('email not confirmed')) {
+        return '请先到邮箱确认账号';
+      }
+      if (code == 'invalid_credentials' ||
+          message.contains('invalid login credentials')) {
+        return '邮箱或密码不正确';
+      }
+      if (code == 'user_already_exists' ||
+          message.contains('user already registered') ||
+          message.contains('already been registered')) {
+        return '该邮箱已注册，请直接登录';
+      }
+      if (code == 'weak_password' || message.contains('password')) {
+        if (message.contains('weak') || message.contains('at least')) {
+          return '密码不符合要求，请使用更强的密码';
+        }
+      }
+    }
+
+    final text = error.toString().toLowerCase();
+    if (text.contains('email_not_confirmed') ||
+        text.contains('email not confirmed')) {
+      return '请先到邮箱确认账号';
+    }
+    if (text.contains('invalid login credentials')) {
       return '邮箱或密码不正确';
     }
-    if (text.contains('Email not confirmed')) {
-      return '请先确认邮箱后再登录';
-    }
-    if (text.contains('User already registered')) {
+    if (text.contains('user already registered') ||
+        text.contains('already been registered')) {
       return '该邮箱已注册，请直接登录';
     }
     return '操作失败：$error';
@@ -101,22 +174,9 @@ class _AccountScreenState extends ConsumerState<AccountScreen> {
         children: [
           if (!configured) ...[
             RimingSurfaceCard(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    '尚未配置云同步',
-                    style: Theme.of(context).textTheme.titleMedium,
-                  ),
-                  const SizedBox(height: AppSpacing.sm),
-                  Text(
-                    '请在运行时传入 SUPABASE_URL 与 SUPABASE_ANON_KEY'
-                    '（见 README / .env.example）。建议项目区域选东京。',
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: scheme.onSurfaceVariant,
-                        ),
-                  ),
-                ],
+              child: Text(
+                '尚未配置云同步',
+                style: Theme.of(context).textTheme.titleMedium,
               ),
             ),
             const SizedBox(height: AppSpacing.lg),
@@ -144,19 +204,6 @@ class _AccountScreenState extends ConsumerState<AccountScreen> {
               onSignIn: () => _submit(false),
               onSignUp: () => _submit(true),
             ),
-          const SizedBox(height: AppSpacing.xl),
-          Text(
-            '说明',
-            style: Theme.of(context).textTheme.titleSmall,
-          ),
-          const SizedBox(height: AppSpacing.sm),
-          Text(
-            '使用邮箱 + 密码登录（适合 Android，无需配置深链）。'
-            '登录后、回到前台、以及本地写入后会自动同步；冲突以更新时间较新的为准。',
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: scheme.onSurfaceVariant,
-                ),
-          ),
         ],
       ),
     );
